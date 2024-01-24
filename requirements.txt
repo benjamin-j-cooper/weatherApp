@@ -1,8 +1,7 @@
-# python==3.11.7
-django
-djangorestframework
-django-environ
-psycopg2
-requests
-pandas
-sqlalchemy
+Django==4.2.9
+django-environ==0.11.2
+djangorestframework==3.14.0
+pandas==2.2.0
+psycopg2==2.9.9
+requests==2.31.0
+SQLAlchemy==2.0.25

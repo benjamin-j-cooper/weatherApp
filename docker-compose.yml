@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  django:
+    container_name: django
+    build: .
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py addData &&
+             python manage.py runserver 0.0.0.0:8000"
+
+    env_file: .env
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - pgdb
+
+  pgdb:
+    container_name: pgdb
+    image: postgres
+    restart: always
+    env_file: .env
+    ports:
+      - 5432:5432
+    environment: 
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: a@a.com
+      PGADMIN_DEFAULT_PASSWORD: a 
+    ports:
+      - "5050:80"
+
+volumes:
+  postgres_data: {}
