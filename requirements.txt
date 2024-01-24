@@ -1,0 +1,8 @@
+# python==3.11.7
+django
+djangorestframework
+django-environ
+psycopg2
+requests
+pandas
+sqlalchemy

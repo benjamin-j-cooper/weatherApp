@@ -1,3 +1,6 @@
+# Temp data folder
+tmp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -5,6 +8,9 @@ __pycache__/
 
 # C extensions
 *.so
+
+# ios 
+.DS_Store
 
 # Distribution / packaging
 .Python
