@@ -35,7 +35,9 @@ SECRET_KEY = env('SECRET_KEY')
 # DEBUG = True
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+# allowed hosts set to all, security warning! reconfigure for production
+ALLOWED_HOSTS = ['*']
+
 
 
 # Application definition
