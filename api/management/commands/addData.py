@@ -3,6 +3,7 @@ from backend.settings import BASE_DIR, DATABASE_URL
 from api.models import weatherData, weatherStats
 
 import os
+import time 
 import requests
 from zipfile import ZipFile
 from io import BytesIO
@@ -25,6 +26,10 @@ class Command(BaseCommand):
         ############
         # Download data from GitHub
         ############
+        start_time = time.time()
+        print('='*40)
+        print('Downloading github repo...')
+        print('='*40)
         # if its already downloaded...
         if os.path.exists(file_path):
             # Get the name of the downloaded github repo
@@ -55,7 +60,10 @@ class Command(BaseCommand):
         ############
         # Ingest the Data into pandas
         ############
-        try: 
+        try:
+            print('='*40) 
+            print('Performing data processing...')
+            print('='*40)
             # store the name of the directory where data files we want to ingest are located
             source_dir = os.path.join(file_path, local_repo_path, data_folder)
             # Get the list of file names in the data source directory
@@ -70,6 +78,9 @@ class Command(BaseCommand):
             for file in files_to_fetch:
                 data = pd.read_csv(f'{source_dir}/{file}', sep='\t', names=cols_source)
                 data['station'] = os.path.splitext(file)[0]
+                #convert the -9999 to pandas missing values
+                data.replace(-9999, np.nan, inplace=True)
+                #split apart data into single fields
                 data['year'] = data['date'].astype(str).str[:4].astype(int)
                 data['month'] = data['date'].astype(str).str[4:6].astype(int)
                 data['day'] = data['date'].astype(str).str[6:].astype(int)
@@ -78,8 +89,6 @@ class Command(BaseCommand):
                 data['min_temp'] = data['min_temp'] / 10
                 #convert precip from tenth of a mm to centimeters
                 data['precip'] = data['precip'] / 100
-                # convert the -9999 to pandas missing values
-                data.replace(-9999, np.nan, inplace=True)
                 # append station data file to main df
                 df = pd.concat([df, data], axis=0, ignore_index=True)
         except Exception as e:
@@ -88,6 +97,9 @@ class Command(BaseCommand):
         # Calculate summary statistics
         ############
         if not df.empty:
+            print('='*40)
+            print('Calculating summary stats...')
+            print('='*40)
             # using groupby, calculate summary statics for each station for each year. skip na values specific to each column
             stats = df.groupby(['station', 'year']).agg({'max_temp': ['mean'], 'min_temp': ['mean'], 'precip': ['sum']}, skipna=True).reset_index()
             # Flatten the multi-level column index created by groupby
@@ -105,9 +117,16 @@ class Command(BaseCommand):
         ############
         # Load data into database models
         ############
+        print('='*40)
+        print('Inserting data into Postgres...')
+        print('='*40)
         # setup Database engine 
         engine = create_engine(DATABASE_URL, echo=False)
         # bulk insert pandas dataframes into database, if data already in table replace it. 
         stats.to_sql(weatherStats._meta.db_table, if_exists='replace',  con=engine, index=True,index_label='id')
         df.to_sql(weatherData._meta.db_table, if_exists='replace', con=engine, index=True,index_label='id')
+        end_time = time.time() - start_time
+        print('='*40)
+        print(f'Completed Data ingestion in {end_time} seconds')
+        print('='*40)
         
