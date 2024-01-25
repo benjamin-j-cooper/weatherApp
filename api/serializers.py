@@ -5,10 +5,10 @@ from .models import weatherData, weatherStats
 class dataSerializer(serializers.ModelSerializer):
     class Meta:
         model = weatherData
-        fields = ('station', 'date', 'max_temp','min_temp','precip')
+        fields = '__all__'
 
 # serializaer for the weather stats
 class statSerializer(serializers.ModelSerializer):
     class Meta:
         model = weatherStats
-        fields = ('station', 'year','max_temp_mean','min_temp_mean','total_precip')
+        fields = '__all__'

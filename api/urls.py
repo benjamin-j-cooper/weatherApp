@@ -2,10 +2,12 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.api_home), #localhost:8000/api/
-    path('weather/', views.weather), #localhost:8000/api/
-    path('', views.stats), #localhost:8000/api/
-    # path('', views.dataCreateAPIView.as_view()),
-    # path('<str:station>/', views.dataDetailAPIView.as_view()),
-    # path('<>', views.stats),
+    # path('', views.api, name='home'),
+    # path('weather/', views.weather), #localhost:8000/api/weather
+    # path('weather/stats/', views.stats), #localhost:8000/api/weather/stats
+    path('weather/', views.data_list_view), #localhost:8000/api/weather
+    path('weather/stats/', views.stats_list_view), #localhost:8000/api/weather/stats
+    # path('weather/', views.data_mixin_view),  #localhost:8000/api/weather
+    # path('weather/stats/', views.stats_mixin_view), #localhost:8000/api/weather/stats
+
 ]

@@ -10,16 +10,18 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 
-repo_owner = 'corteva'
-repo_name = 'code-challenge-template'
-data_folder= 'wx_data'
-file_path = os.path.join(BASE_DIR, 'tmp')
-gitHub_api_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/zipball/main'
+import warnings # prevent python warnings from printing to the console                                
+warnings.filterwarnings('ignore')
 
 class Command(BaseCommand):
     help = "This command will add data from the corteva coding project github repository to the database"
 
     def handle(self, *args, **kwargs):
+        repo_owner = 'corteva'
+        repo_name = 'code-challenge-template'
+        data_folder= 'wx_data'
+        file_path = os.path.join(BASE_DIR, 'tmp')
+        gitHub_api_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/zipball/main'
         ############
         # Download data from GitHub
         ############
@@ -71,6 +73,11 @@ class Command(BaseCommand):
                 data['year'] = data['date'].astype(str).str[:4].astype(int)
                 data['month'] = data['date'].astype(str).str[4:6].astype(int)
                 data['day'] = data['date'].astype(str).str[6:].astype(int)
+                #convert temps from tenth of a degree C to degrees celcius
+                data['max_temp'] = data['max_temp'] / 10 
+                data['min_temp'] = data['min_temp'] / 10
+                #convert precip from tenth of a mm to centimeters
+                data['precip'] = data['precip'] / 100
                 # convert the -9999 to pandas missing values
                 data.replace(-9999, np.nan, inplace=True)
                 # append station data file to main df
@@ -101,6 +108,6 @@ class Command(BaseCommand):
         # setup Database engine 
         engine = create_engine(DATABASE_URL, echo=False)
         # bulk insert pandas dataframes into database, if data already in table replace it. 
-        stats.to_sql(weatherStats._meta.db_table, if_exists='replace',  con=engine, index=True)
-        df.to_sql(weatherData._meta.db_table, if_exists='replace', con=engine, index=True)
+        stats.to_sql(weatherStats._meta.db_table, if_exists='replace',  con=engine, index=True,index_label='id')
+        df.to_sql(weatherData._meta.db_table, if_exists='replace', con=engine, index=True,index_label='id')
         
