@@ -161,11 +161,11 @@ Clients can navigate through returned records using the uncluded pagination feat
 
 ![pagination](static/Screenshot10.png)
 
-Additionally,  clients can filter the response by date and station ID using the custom filter tools (or a query string):  
+Additionally,  clients can filter the response by date and station ID using the custom filter tools (or a query string). This functionality is maintained in api.filters.py:
 
 ![filtering](static/Screenshot04.png)
 
-Finally, I third endpoint provides automatic API documentation using the OpenAI specification:  
+Finally, a third endpoint provides automatic API documentation using the OpenAI specification:  
 
     /api/swagger
 
