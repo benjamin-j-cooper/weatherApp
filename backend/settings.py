@@ -159,6 +159,7 @@ REST_FRAMEWORK = {
 
 # logging
 # Define the log file path
+os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)
 LOG_FILE_PATH = 'logs/django.log'
 
 # Set up logging configuration
