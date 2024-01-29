@@ -162,22 +162,27 @@ class Command(BaseCommand):
         # Establish a connection to the PostgreSQL database
         engine = create_engine(DATABASE_URL, echo=False)
 
-        # weather data
-        records_count, new_records = self.insert_data_pgdb(df, weatherData, engine)
-        # stats
-        records_count, new_records = self.insert_data_pgdb(stats, weatherStats, engine)
-
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-
         #print to logger
         logger.info(f'Django command appData called: {datetime.now()}')
         logger.info(f'Start time of data ingestion: {start_time}')
         logger.info(f'Dataframe Null values: \n{df.isnull().sum()}')
+
+        # weather data
+        records_count, new_records = self.insert_data_pgdb(df, weatherData, engine)
+        # logging
         logger.info(f'{new_records} records added to weatherdata table')
         logger.info(f'{records_count} records in weatherdata table')
+
+        # stats
+        records_count, new_records = self.insert_data_pgdb(stats, weatherStats, engine)
+        # logger
         logger.info(f'{new_records} records added to stats table')
         logger.info(f'{records_count} records in weatherdata table')
+
+        #make end time, get elapsed time
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        # logger
         logger.info(f'End time of data ingestion: {end_time}')
         logger.info(f'Data ingestion completed in: {elapsed_time} seconds')
 
