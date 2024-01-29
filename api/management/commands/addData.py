@@ -4,15 +4,20 @@ from api.models import weatherData, weatherStats
 
 import os
 import time 
+from datetime import datetime
 import requests
 from zipfile import ZipFile
 from io import BytesIO
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
+import logging
 
 import warnings # prevent python warnings from printing to the console                                
 warnings.filterwarnings('ignore')
+
+logger = logging.getLogger('django')
+
 
 class Command(BaseCommand):
     help = "This command will add data from the corteva coding project github repository to the database"
@@ -23,6 +28,7 @@ class Command(BaseCommand):
         data_folder= 'wx_data'
         file_path = os.path.join(BASE_DIR, 'tmp')
         gitHub_api_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/zipball/main'
+        
         ############
         # Download data from GitHub
         ############
@@ -71,7 +77,7 @@ class Command(BaseCommand):
             # column names of tsv weather data files
             cols_source = ['date','max_temp','min_temp','precip']
             # column names of our pandas df
-            cols_dest = ['station','date','year','month','day','max_temp','min_temp','precip']
+            cols_dest = ['station','date','year','max_temp','min_temp','precip']
             #create empty dataframe to add iterations of loaded files into
             df = pd.DataFrame(columns=cols_dest)
             # iterate through the data files, load them into pandas, transform them, and then append them to df
@@ -82,8 +88,8 @@ class Command(BaseCommand):
                 data.replace(-9999, np.nan, inplace=True)
                 #split apart data into single fields
                 data['year'] = data['date'].astype(str).str[:4].astype(int)
-                data['month'] = data['date'].astype(str).str[4:6].astype(int)
-                data['day'] = data['date'].astype(str).str[6:].astype(int)
+                # data['date'] = pd.to_datetime(df['date'].astype(str), format='%Y%m%d', errors='coerce')
+                # data['date'] = df['date'].dt.strftime('%Y-%m-%d')
                 #convert temps from tenth of a degree C to degrees celcius
                 data['max_temp'] = data['max_temp'] / 10 
                 data['min_temp'] = data['min_temp'] / 10
@@ -115,18 +121,106 @@ class Command(BaseCommand):
         else:
             pass
         ############
+        # Running QA/QC checks on data
+        ############ 
+        print('='*40)
+        print('Running QA/QC checks on data...')
+        print('='*40)
+
+        # check temps
+        min_temp = -273.15  # Define minimum allowable temperature for celcius
+        max_temp = 56.7  # Define maximum allowable temperature for celcius
+        # Check if temps are in celcius range
+        max_temps_are_between_range = (df['max_temp'] >= min_temp) & (df['max_temp'] <= max_temp)
+        min_temps_are_between_range = (df['min_temp'] >= min_temp) & (df['min_temp'] <= max_temp)
+
+        max_values_between_range = max_temps_are_between_range.all()
+        min_values_between_range = min_temps_are_between_range.all()
+
+        if not max_values_between_range and min_values_between_range:
+            print('QA/QC WARNING: temperature values outside of logical Celcius range!')
+
+        # check dates
+        start_date = 19850101
+        end_date = 20141231
+        # Check if dates are between start_date and end_date
+        is_between_dates = (df['date'] >= start_date) & (df['date'] <= end_date)
+        all_dates_between_range = is_between_dates.all()
+
+        if not all_dates_between_range:
+            print('QA/QC WARNING: dates are outside of specified date range!')
+            
+        
+        ############
         # Load data into database models
         ############
+    
         print('='*40)
         print('Inserting data into Postgres...')
         print('='*40)
-        # setup Database engine 
+
+        # Establish a connection to the PostgreSQL database
         engine = create_engine(DATABASE_URL, echo=False)
-        # bulk insert pandas dataframes into database, if data already in table replace it. 
-        stats.to_sql(weatherStats._meta.db_table, if_exists='replace',  con=engine, index=True,index_label='id')
-        df.to_sql(weatherData._meta.db_table, if_exists='replace', con=engine, index=True,index_label='id')
-        end_time = time.time() - start_time
+
+        # weather data
+        records_count, new_records = self.insert_data_pgdb(df, weatherData, engine)
+        # stats
+        records_count, new_records = self.insert_data_pgdb(stats, weatherStats, engine)
+
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+
+        #print to logger
+        logger.info(f'Django command appData called: {datetime.now()}')
+        logger.info(f'Start time of data ingestion: {start_time}')
+        logger.info(f'Dataframe Null values: \n{df.isnull().sum()}')
+        logger.info(f'{new_records} records added to weatherdata table')
+        logger.info(f'{records_count} records in weatherdata table')
+        logger.info(f'{new_records} records added to stats table')
+        logger.info(f'{records_count} records in weatherdata table')
+        logger.info(f'End time of data ingestion: {end_time}')
+        logger.info(f'Data ingestion completed in: {elapsed_time} seconds')
+
+
         print('='*40)
-        print(f'Completed Data ingestion in {end_time} seconds')
+        print(f'Completed Data ingestion in {elapsed_time} seconds')
         print('='*40)
-        
+
+
+    def insert_data_pgdb(self, dataframe, dataModel, engine):
+        pgdb_table = dataModel._meta.db_table
+        try:
+            # Check if the database table is empty
+            if dataModel.objects.count() == 0:
+                #database table is empty. To speed up the ingestion, bulk insert all records.
+                dataframe.to_sql(pgdb_table, if_exists='replace', con=engine, index=True,index_label='id')
+                new_records = dataframe.shape[0]
+                records_count = dataModel.objects.count()
+
+                return records_count, new_records
+            
+            else:
+                # Check if records already exist in the database
+                existing_records = pd.read_sql_query(f'SELECT * FROM {pgdb_table}', engine)
+                existing_keys = set(existing_records.apply(lambda row: self.generate_key(row, pgdb_table), axis=1))
+                new_records = dataframe[~dataframe.apply(lambda row: self.generate_key(row, pgdb_table), axis=1).isin(existing_keys)]
+
+                if not new_records.empty:
+                    new_records.to_sql(pgdb_table, if_exists='append', con=engine, index=True, index_label='id')
+                    new_records = len(new_records)
+                    records_count = dataModel.objects.count()
+                else:
+                    new_records = 0
+                    records_count = dataModel.objects.count()
+                    
+                return records_count, new_records
+        except Exception as e:
+            print(f"Error adding records to the database: {e}")
+            logger.info(f"Error adding records to the database: {e}")
+
+    def generate_key(self, row, pgdb_table):
+        if pgdb_table in 'api_weatherdata':
+            # Combine 'station' and 'date' fields to create a composite key
+            return f"{row['station']}_{row['date']}"
+        else:
+            return f"{row['station']}_{row['year']}"

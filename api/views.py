@@ -2,11 +2,11 @@ from django.shortcuts import render
 
 from .models import weatherData, weatherStats
 from .serializers import dataSerializer, statSerializer
-from .filters import dataFilter, statFilter
+from .filters import dataFilter, statsFilter
 
 from rest_framework import generics, mixins
 
-class weatherView(mixins.ListModelMixin, generics.GenericAPIView):
+class weather_Data_View(mixins.ListModelMixin, generics.GenericAPIView):
     queryset = weatherData.objects.all()
     serializer_class = dataSerializer
     filterset_class = dataFilter
@@ -14,14 +14,14 @@ class weatherView(mixins.ListModelMixin, generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         return self.list(request)
 
-weather_view = weatherView.as_view()
+weather_view = weather_Data_View.as_view()
 
-class statsView(mixins.ListModelMixin, generics.GenericAPIView):
+class weather_Stats_View(mixins.ListModelMixin, generics.GenericAPIView):
     queryset = weatherStats.objects.all()
     serializer_class = statSerializer
-    filterset_class = statFilter
+    filterset_class = statsFilter
 
     def get(self, request, *args, **kwargs):
         return self.list(request)
 
-stats_view = statsView.as_view()
+stats_view = weather_Stats_View.as_view()

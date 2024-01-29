@@ -16,7 +16,7 @@ class dataFilter(filters.FilterSet):
         model = weatherData
         fields = ['station','year']
 
-class statFilter(filters.FilterSet):
+class statsFilter(filters.FilterSet):
     station = filters.ChoiceFilter(choices=[])
     year = filters.ChoiceFilter(choices=[])
 
