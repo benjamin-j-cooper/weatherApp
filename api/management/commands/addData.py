@@ -199,7 +199,7 @@ class Command(BaseCommand):
             if dataModel.objects.count() == 0:
                 #database table is empty. To speed up the ingestion, bulk insert all records.
                 dataframe.to_sql(pgdb_table, if_exists='replace', con=engine, index=True,index_label='id')
-                new_records = dataframe.shape[0]
+                new_records = len(dataframe)
                 records_count = dataModel.objects.count()
 
                 return records_count, new_records
