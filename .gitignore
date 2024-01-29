@@ -1,5 +1,9 @@
-# Temp data folder
+# Django Stuff
+#  temp data folder
 tmp
+#  migrations
+*_initial.py
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

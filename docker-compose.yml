@@ -8,6 +8,8 @@ services:
       sh -c "python manage.py makemigrations &&
              python manage.py migrate &&
              python manage.py addData &&
+             python manage.py test &&
+             python manage.py tests_addData &&
              python manage.py runserver 0.0.0.0:8000"
 
     env_file: .env
@@ -42,6 +44,8 @@ services:
       PGADMIN_DEFAULT_PASSWORD: a 
     ports:
       - "5050:80"
+    depends_on:
+      - django
 
 volumes:
   postgres_data: {}
