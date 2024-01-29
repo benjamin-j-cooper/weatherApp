@@ -25,10 +25,10 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         repo_owner = 'corteva'
         repo_name = 'code-challenge-template'
-        data_folder= 'wx_data'
+        data_folder = 'wx_data'
         file_path = os.path.join(BASE_DIR, 'tmp')
         gitHub_api_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/zipball/main'
-        
+
         ############
         # Download data from GitHub
         ############
@@ -78,22 +78,22 @@ class Command(BaseCommand):
             cols_source = ['date','max_temp','min_temp','precip']
             # column names of our pandas df
             cols_dest = ['station','date','year','max_temp','min_temp','precip']
-            #create empty dataframe to add iterations of loaded files into
+            # create empty dataframe to add iterations of loaded files into
             df = pd.DataFrame(columns=cols_dest)
             # iterate through the data files, load them into pandas, transform them, and then append them to df
             for file in files_to_fetch:
                 data = pd.read_csv(f'{source_dir}/{file}', sep='\t', names=cols_source)
                 data['station'] = os.path.splitext(file)[0]
-                #convert the -9999 to pandas missing values
+                # convert the -9999 to pandas missing values
                 data.replace(-9999, np.nan, inplace=True)
-                #split apart data into single fields
+                # split apart data into single fields
                 data['year'] = data['date'].astype(str).str[:4].astype(int)
                 # data['date'] = pd.to_datetime(df['date'].astype(str), format='%Y%m%d', errors='coerce')
                 # data['date'] = df['date'].dt.strftime('%Y-%m-%d')
-                #convert temps from tenth of a degree C to degrees celcius
+                # convert temps from tenth of a degree C to degrees celcius
                 data['max_temp'] = data['max_temp'] / 10 
                 data['min_temp'] = data['min_temp'] / 10
-                #convert precip from tenth of a mm to centimeters
+                # convert precip from tenth of a mm to centimeters
                 data['precip'] = data['precip'] / 100
                 # append station data file to main df
                 df = pd.concat([df, data], axis=0, ignore_index=True)
@@ -115,7 +115,7 @@ class Command(BaseCommand):
                                         'min_temp_mean': 'min_temp_mean', 'precip_sum': 'total_precip'})
             # Specify the number of significant figures for each column
             significant_figures = {'max_temp_mean': 2, 'min_temp_mean': 2, 'total_precip': 0}
-             # Round the summary stats to the specified number of significant figures
+            # Round the summary stats to the specified number of significant figures
             for col, sig_figs in significant_figures.items():
                 stats[col] = stats[col].round(sig_figs)
         else:
@@ -149,12 +149,12 @@ class Command(BaseCommand):
 
         if not all_dates_between_range:
             print('QA/QC WARNING: dates are outside of specified date range!')
-            
-        
+
+
         ############
         # Load data into database models
         ############
-    
+
         print('='*40)
         print('Inserting data into Postgres...')
         print('='*40)
@@ -162,7 +162,7 @@ class Command(BaseCommand):
         # Establish a connection to the PostgreSQL database
         engine = create_engine(DATABASE_URL, echo=False)
 
-        #print to logger
+        # print to logger
         logger.info(f'Django command appData called: {datetime.now()}')
         logger.info(f'Start time of data ingestion: {start_time}')
         logger.info(f'Dataframe Null values: \n{df.isnull().sum()}')
@@ -179,31 +179,29 @@ class Command(BaseCommand):
         logger.info(f'{new_records} records added to stats table')
         logger.info(f'{records_count} records in weatherdata table')
 
-        #make end time, get elapsed time
+        # make end time, get elapsed time
         end_time = time.time()
         elapsed_time = end_time - start_time
         # logger
         logger.info(f'End time of data ingestion: {end_time}')
         logger.info(f'Data ingestion completed in: {elapsed_time} seconds')
 
-
         print('='*40)
         print(f'Completed Data ingestion in {elapsed_time} seconds')
         print('='*40)
-
 
     def insert_data_pgdb(self, dataframe, dataModel, engine):
         pgdb_table = dataModel._meta.db_table
         try:
             # Check if the database table is empty
             if dataModel.objects.count() == 0:
-                #database table is empty. To speed up the ingestion, bulk insert all records.
+                # database table is empty. To speed up the ingestion, bulk insert all records.
                 dataframe.to_sql(pgdb_table, if_exists='replace', con=engine, index=True,index_label='id')
                 new_records = len(dataframe)
                 records_count = dataModel.objects.count()
 
                 return records_count, new_records
-            
+
             else:
                 # Check if records already exist in the database
                 existing_records = pd.read_sql_query(f'SELECT * FROM {pgdb_table}', engine)
@@ -217,7 +215,7 @@ class Command(BaseCommand):
                 else:
                     new_records = 0
                     records_count = dataModel.objects.count()
-                    
+
                 return records_count, new_records
         except Exception as e:
             print(f"Error adding records to the database: {e}")
