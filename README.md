@@ -171,9 +171,7 @@ Finally, a third endpoint provides automatic API documentation using the OpenAI 
 
 ![swagger](static/Screenshot11.png)
 
-And tests are implemented in code (addData.py) and through django test cases implemented in the docker-compose specification: 
-
-    api.tests
+And tests are implemented in code (addData.py) and through the test cases directory (api.tests) implemented in the docker-compose specification.  
 
 ### Extra Credit - Deployment
 This project is not currently running in on AWS, however the approach I used of containerizing my django app with Docker was intentional and chosen to optimize deployment to AWS. There are several approaches that could be used to deploy this Docker/Django REST API to AWS.   
