@@ -1,4 +1,4 @@
-# Weclome to my weatherApp!
+# Welcome to my weatherApp!
 
 ### Description:
 Corteva Coding Challenge Exercise Solution
@@ -47,22 +47,22 @@ Navigate to
 
 Enter username (a@a.com) and password (a) 
 
-![pgadmin4-login](static/Screenshot 2024-01-29 at 4.07.37 PM.png)
+![pgadmin4-login](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 4.07.37 PM.png)
 
 Add a new server and setup:
 
-![pgadmin4-newServer](static/Screenshot 2024-01-29 at 4.08.00 PM.png)
+![pgadmin4-newServer](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 4.08.00 PM.png)
 
 Name it whatever you like: 
 
-![pgadmin4-general](static/Screenshot 2024-01-29 at 4.08.23 PM.png)
+![pgadmin4-general](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 4.08.23 PM.png)
 
 Host = pgdb, maintanance/username/password = postgres:
-![pgadmin4-connection](static/Screenshot 2024-01-29 at 4.08.36 PM.png)
+![pgadmin4-connection](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 4.08.36 PM.png)
 
 Now you can interact with the weather data and weather stats tables:
 
-![pgadmin4-query](static/Screenshot 2024-01-29 at 4.09.15 PM.png)
+![pgadmin4-query](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 4.09.15 PM.png)
 
 ## Responses
 ### Problem 1 - Data Modeling
@@ -81,14 +81,14 @@ Data model of weather data records:
 ### Problem 2 - Ingestion  
 Weather Data is ingested from raw .tsv files, transformed, and supplied into the postgres database using the custom management command "addData.py". This command is included in the docker-compose specification and run when the docker container is intialized:  
 
-![docker-compose.yml](static/Screenshot 2024-01-29 at 3.24.34 PM.png)
+![docker-compose.yml](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 3.24.34 PM.png)
 
 To speed up supplying the data to Postgres, addData first checks if the there is already data in the specified data model's table. If there is no data in the table, the data is bulk copied to the database.  
 If there are existing records in the data model's table, an alternate method is used to check if each record already exists in the database. If it does not already exist, it is added. 
 
 Logging for addData is implemented using django's built in logging. Log records including 'start time', 'end time', and the number of records added to the database are ouput to the log file logs/django.log  
 
-![django.log](static/Screenshot 2024-01-29 at 3.39.47 PM.png)
+![django.log](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 3.39.47 PM.png)
 
 ### Problem 3 - Data Analysis
 For every year, for every weather station: Average maximum temperature (in degrees Celsius), Average minimum temperature (in degrees Celsius), and Total accumulated precipitation (in centimeters) are calculated.
@@ -147,21 +147,21 @@ I used the Django REST framework and created a REST API with the following endpo
 
 Both endpoints return a JSON-formatted response with a representation of the ingested/calculated data in the database:  
 
-![weather-api](static/Screenshot 2024-01-29 at 3.59.22 PM.png)
+![weather-api](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 3.59.22 PM.png)
 
 Clients can navigate through returned records using the uncluded pagination feature:  
 
-![pagination](static/Screenshot 2024-01-29 at 4.14.00 PM.png)
+![pagination](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 4.14.00 PM.png)
 
 Additionally,  clients can filter the response by date and station ID using the custom filter tools (or a query string):  
 
-![filtering](static/Screenshot 2024-01-29 at 4.00.33 PM.png)
+![filtering](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 4.00.33 PM.png)
 
 Finally, I third endpoint provides automatic API documentation using the OpenAI specification:  
 
     /api/swagger
 
-![swagger](static/Screenshot 2024-01-29 at 4.14.19 PM.png)
+![swagger](https://github.com/benjamin-j-cooper/weatherApp/blob/main/static/Screenshot 2024-01-29 at 4.14.19 PM.png)
 
 And tests are implemented in code (addData.py) and through django test cases implemented in the docker-compose specification: 
 
