@@ -31,10 +31,17 @@ Now, run the container (If you have already built the images, successive runs on
 
     docker-compose up django
 
+In your browser, navigate to:  
+
+    http://localhost:8000/api/weather/
+
+Or:  
+
+    http://localhost:8000/api/weather/stats/
+
 To stop and remove the container:
 
     docker-compose down  
-
 
 **** NOTE ****  
 If you would like to spin up a container with an image of pgadmin4 included (a postgres UI for interacting easily with the database) instead of "docker-compose up django", use: 
@@ -57,7 +64,8 @@ Name it whatever you like:
 
 ![pgadmin4-general](static/Screenshot07.png)
 
-Host = pgdb, maintanance/username/password = postgres:
+Host = pgdb, maintanance/username/password = postgres:  
+
 ![pgadmin4-connection](static/Screenshot08.png)
 
 Now you can interact with the weather data and weather stats tables:
@@ -165,7 +173,7 @@ Finally, I third endpoint provides automatic API documentation using the OpenAI 
 
 And tests are implemented in code (addData.py) and through django test cases implemented in the docker-compose specification: 
 
-    api/tests/
+    api.tests
 
 ### Extra Credit - Deployment
 This project is not currently running in on AWS, however the approach I used of containerizing my django app with Docker was intentional and chosen to optimize deployment to AWS.  
