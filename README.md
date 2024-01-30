@@ -174,7 +174,7 @@ Finally, a third endpoint provides automatic API documentation using the OpenAI 
 And tests are implemented in code (addData.py) and through the test cases directory (api.tests) implemented in the docker-compose specification.  
 
 ### Extra Credit - Deployment
-This project is not currently running in on AWS, however the approach I used of containerizing my django app with Docker was intentional and chosen to optimize deployment to AWS. There are several approaches that could be used to deploy this Docker/Django REST API to AWS.   
+This project is not currently running on AWS, however the approach I used of containerizing my django app with Docker was intentional and chosen to optimize deployment to AWS. There are several approaches that could be used to deploy this Docker/Django REST API to AWS.   
 If I were to deploy to AWS today, I would use AWS Elastic Beanstalk because it handles many of the more complex deployment details, is optimized for Docker containers, it is scalable, and has plenty of documentation. 
 The next step in deploying this dockerized django REST API to AWS Elastic Beanstalk:
  - CI/CD: create gitHub actions.yml file to deploy docker image from gitHub to AWS account (alt: push Docker image to AWS from DockerHub)
