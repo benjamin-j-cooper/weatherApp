@@ -157,7 +157,7 @@ Both endpoints return a JSON-formatted response with a representation of the ing
 
 ![weather-api](static/Screenshot03.png)
 
-Clients can navigate through returned records using the uncluded pagination feature:  
+Clients can navigate through returned records using the included pagination feature:  
 
 ![pagination](static/Screenshot10.png)
 
@@ -175,7 +175,8 @@ And tests are implemented in code (addData.py) and through the test cases direct
 
 ### Extra Credit - Deployment
 This project is not currently running in on AWS, however the approach I used of containerizing my django app with Docker was intentional and chosen to optimize deployment to AWS. There are several approaches that could be used to deploy this Docker/Django REST API to AWS.   
-I would use AWS Elastic Beanstalk because it handles many of the more complex deployment details, is optimized for Docker containers, and has plenty of documentation. 
+If I were to deploy to AWS today, I would use AWS Elastic Beanstalk because it handles many of the more complex deployment details, is optimized for Docker containers, it is scalable, and has plenty of documentation. 
 The next step in deploying this dockerized django REST API to AWS Elastic Beanstalk:
  - CI/CD: create gitHub actions.yml file to deploy docker image from gitHub to AWS account (alt: push Docker image to AWS from DockerHub)
- - Create Elastic Beanstak App: using AWSCLI or AWS Console
+ - Create Elastic Beanstak App using AWSCLI or AWS Console
+ - Deploy Docker container to S3 bucket with commit
