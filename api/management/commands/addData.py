@@ -177,7 +177,7 @@ class Command(BaseCommand):
         records_count, new_records = self.insert_data_pgdb(stats, weatherStats, engine)
         # logger
         logger.info(f'{new_records} records added to stats table')
-        logger.info(f'{records_count} records in weatherdata table')
+        logger.info(f'{records_count} records in stats table')
 
         # make end time, get elapsed time
         end_time = time.time()
